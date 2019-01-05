@@ -1,4 +1,4 @@
-use super::activation_functions;
+use activations;
 
 pub fn dot_product(a: Vec<f64>, b: Vec<f64>) -> f64 {
     // Calculate the dot product of two vectors.
