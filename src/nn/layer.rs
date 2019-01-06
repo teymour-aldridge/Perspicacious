@@ -1,15 +1,9 @@
 extern crate rand;
 
-use std::option;
 use std::vec::Vec;
 use super::activations::activations;
 use super::neuron;
 use super::neuron::dot_product;
-
-fn clone_vec<T: Clone>(vec: &[T]) -> Vec<T> {
-    let mut newvec = vec.to_vec();
-    newvec
-}
 
 pub enum PreviousLayer<Layer> {
     None,
@@ -23,7 +17,7 @@ pub struct Layer {
 }
 
 impl Layer {
-    fn new(previous_layer: u64, n_neurons: u64, lr: f64, activation_function: activations::ActivationFunction) -> Layer {
+    fn new(previous_layer: u64, n_neurons: u64, lr: f64, activation_function: activations::ActivationTypes) -> Layer {
         // Ensure there is at least one neuron in the layer.
         assert!(n_neurons > 0);
         let mut random_weights: Vec<f64> = Vec::new();
@@ -36,7 +30,8 @@ impl Layer {
         // Add neurons to the layer.
         let mut neurons: Vec<neuron::Neuron> = Vec::new();
         for _ in 1..n_neurons {
-            neurons.push(neuron::Neuron::new(&random_weights, &lr, activation_function))
+            neurons.push(neuron::Neuron::new(&random_weights, &lr,
+                                             activations::ActivationFunction::new(&activation_function)));
         }
         let mut output_cache: Vec<f64> = Vec::new();
         for _ in 1..n_neurons {
@@ -49,22 +44,22 @@ impl Layer {
             output_cache,
         }
     }
-    pub fn outputs(&mut self, inputs: Vec<f64>) -> Vec<f64> {
+    pub fn outputs(&mut self, inputs: &Vec<f64>) -> Vec<f64> {
         if self.previous_layer == 0 {
-            self.output_cache = inputs;
+            self.output_cache = inputs.to_vec();
         } else {
             self.output_cache.clear();
             for n in 0..(self.neurons.len() - 1) {
                 self.output_cache.push(self.neurons[n].output(&inputs));
             }
         }
-        self.output_cache
+        self.output_cache.to_vec()
     }
     /// * Calculates the deltas for the last layer of the neural network.
     /// y -> The actual values (that the neural network should have predicted). Used to calculate the loss and then update weights.
     pub fn get_deltas_for_last_layer(&mut self, y: Vec<f64>) {
         for n in 0..(self.neurons.len() - 1) {
-            self.neurons[n].delta = (self.neurons[n].activation_function.derivative_function)(self.neurons[n].output_cache) * (y[n] - self.output_cache[n])
+            self.neurons[n].delta = (self.neurons[n].activation_function.derivative_function)(&self.neurons[n].output_cache) * (y[n] - self.output_cache[n])
         }
     }
     pub fn get_delates_for_hidden_layer(&mut self, next_layer: &mut Layer) {
@@ -73,14 +68,14 @@ impl Layer {
             // Calculate next layer.
             let mut next_weights: Vec<f64> = Vec::new();
             let mut next_deltas: Vec<f64> = Vec::new();
-            for neuron in next_layer.neurons {
+            for neuron in &mut next_layer.neurons {
                 next_weights.push(neuron.weights[i]);
                 next_deltas.push(neuron.delta);
             }
             // Sum weights + deltas
             let sum_of_weights_and_deltas: f64 = dot_product(&next_weights, &next_deltas);
             // n (mutable reference to neuron) is created here
-            self.neurons[i].delta = sum_of_weights_and_deltas * (self.neurons[i].activation_function.derivative_function)(self.neurons[i].output_cache) as f64
+            self.neurons[i].delta = sum_of_weights_and_deltas * (self.neurons[i].activation_function.derivative_function)(&self.neurons[i].output_cache) as f64
             // n (mutable reference to neuron) is dropped here
         }
     }

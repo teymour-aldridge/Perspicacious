@@ -12,14 +12,14 @@ pub mod activations {
     }
 
     // Struct to hold the activation function.
-    #[derive(Debug, Copy, Clone)]
+    #[derive(Copy, Clone)]
     pub struct ActivationFunction {
         pub function: fn(&f64) -> f64,
         pub derivative_function: fn(&f64) -> f64,
     }
 
     impl ActivationFunction {
-        fn new(function_type: ActivationTypes) -> ActivationFunction {
+        pub fn new(function_type: &ActivationTypes) -> ActivationFunction {
             match function_type {
                 ActivationTypes::Sigmoid => {
                     ActivationFunction {
