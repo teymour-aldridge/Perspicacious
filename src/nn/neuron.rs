@@ -29,12 +29,8 @@ impl Neuron {
             delta: 0.0,
         }
     }
-    pub fn output(&mut self, inputs: Vec<f64>) -> Vec<f64> {
-        self.output_cache = dot_product(&inputs, &self.weights);
-        let mut output: Vec<f64> = Vec::new();
-        for item in inputs {
-            output.push((self.activation_function.function)(item))
-        }
-        output
+    pub fn output(&mut self, inputs: &Vec<f64>) -> f64 {
+        self.output_cache = dot_product(inputs, &self.weights);
+        (self.activation_function.function)(&self.output_cache)
     }
 }

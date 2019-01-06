@@ -36,9 +36,9 @@ impl Layer {
         // Add neurons to the layer.
         let mut neurons: Vec<neuron::Neuron> = Vec::new();
         for _ in 1..n_neurons {
-            neurons.push(neuron::Neuron::new(clone_vec(&random_weights), &lr, activation_function))
+            neurons.push(neuron::Neuron::new(&random_weights, &lr, activation_function))
         }
-        let mut output_cache: Vec<f64>;
+        let mut output_cache: Vec<f64> = Vec::new();
         for _ in 1..n_neurons {
             output_cache.push(0.0);
         }
@@ -55,7 +55,7 @@ impl Layer {
         } else {
             self.output_cache.clear();
             for n in 0..(self.neurons.len() - 1) {
-                self.neurons[n].output(inputs);
+                self.output_cache.push(self.neurons[n].output(&inputs));
             }
         }
         self.output_cache
